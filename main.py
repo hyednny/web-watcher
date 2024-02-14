@@ -1,15 +1,24 @@
 import json
+import time
 import schedule
-from time import sleep
+import time
 from datetime import datetime
 from argparse import ArgumentParser
 from lib.Detector import Detector
 from lib.SlackBot import SlackBot
+# from flask import Flask
 
+# app = Flask(__name__)
+
+# @app.route('/main')
+# def hello():
+#     return 'Hello, Notification Bot!'
+
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=8080)
 
 def heartbeat():
     print(f'{datetime.now().strftime("%Y.%m.%d %H:%M:%S")} Good working :)')
-
 
 def format_message(before_change: str, after_change: str) -> str:
     """
@@ -37,8 +46,9 @@ def format_message(before_change: str, after_change: str) -> str:
 
     if len(changes) == 0:
         return 'realSeatCntlk 이외 변화 발생.'
+        
 
-    return '\n'.join(map(lambda x: f'{x[0]}일 공연 {x[1]}석 남음.', changes)) + '\n링크는 <https://m.ticket.melon.com/public/index.html#performance.index?prodId=206425|여기>.'
+    return '\n'.join(map(lambda x: f'{x[0]}일 공연 {x[1]}석 남음.', changes))
 
 
 if __name__ == '__main__':
@@ -56,13 +66,12 @@ if __name__ == '__main__':
 
     slack_bot = SlackBot(webhook_url)
     detector = Detector(target, lambda prev, now: slack_bot.send(format_message(prev, now)))
-
     heartbeat()
-    slack_bot.send('Watcher 기동!')
+    slack_bot.send('알림!!!')
 
     schedule.every(1).hours.do(heartbeat)
     schedule.every(interval).seconds.do(detector.tick)
 
     while True:
         schedule.run_pending()
-        sleep(0.01)
+        time.sleep(0.01)
